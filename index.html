@@ -3,15 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ETIQUETA DE SEGURIDAD: Esto fuerza al navegador a usar siempre HTTPS -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>Gestión de Capacitaciones</title>
-    
-    <!-- Corregido: Todos los recursos se cargan con HTTPS para evitar el error de "No seguro" -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { background: #f0f4f8; font-family: 'Segoe UI', Roboto, sans-serif; }
         .sidebar { min-height: 100vh; background: #0b2a3b; color: #fff; padding: 20px 0; box-shadow: 2px 0 12px rgba(0,0,0,0.08); }
@@ -34,181 +29,206 @@
     </style>
 </head>
 <body>
+
 <div class="container-fluid">
-<div class="row"><nav class="col-md-3 col-lg-2 sidebar d-md-block">
-<div class="text-center mb-4 mt-2"><i class="fas fa-chalkboard-teacher fa-3x text-info"></i>
-<h5 class="mt-2">Capacitaciones</h5>
-</div>
-<ul class="nav flex-column">
-<li class="nav-item"><a class="nav-link" id="navConfig" href="#"><i class="fas fa-cog"></i> Configuración</a></li>
-<li class="nav-item"><a class="nav-link" id="navImportar" href="#"><i class="fas fa-upload"></i> Subir lista de docentes</a></li>
-<li class="nav-item"><a class="nav-link" id="navDashboard" href="#"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-<hr class="border-secondary" />
-<li class="nav-item"><a class="nav-link active" id="navRegistro" href="#"><i class="fas fa-user-check"></i> Registro</a></li>
-</ul>
-<hr class="border-secondary" />
-<div class="text-center text-secondary small mt-3"><i class="fas fa-users"></i> <span id="totalEmpleadosSpan">0</span> empleados</div>
-</nav><main class="col-md-9 col-lg-10 main-content">
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-<div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert">
-<div class="d-flex">
-<div class="toast-body" id="toastMessage">OK</div>
-<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>
-</div>
-</div>
-
-<div id="moduloConfig" style="display: none;">
-<h3 class="mb-4"><i class="fas fa-cog text-primary me-2"></i>Configuración de Capacitaciones</h3>
-<div class="row">
-<div class="col-lg-6">
-<div class="card">
-<div class="card-header">➕ Nueva Capacitación</div>
-<div class="card-body"><form id="formCapacitacion">
-<div class="mb-2"><label class="form-label">Título / Temática</label> <input type="text" class="form-control" id="capTitulo" placeholder="Ej: Taller de Liderazgo" required="" /></div>
-<div class="row">
-<div class="col-6 mb-2"><label class="form-label">Fecha</label> <input type="date" class="form-control" id="capFecha" required="" /></div>
-<div class="col-6 mb-2"><label class="form-label">Horario</label> <input type="time" class="form-control" id="capHorario" required="" /></div>
-</div>
-<div class="mb-2"><label class="form-label">Oferente</label> <input type="text" class="form-control" id="capOferente" placeholder="Nombre del instructor" required="" /></div>
-<div class="mb-2"><label class="form-label">Lugar</label> <input type="text" class="form-control" id="capLugar" placeholder="Auditorio, Aula, etc." required="" /></div>
-<div class="mb-3"><label class="form-label">Tipo de participantes</label><select class="form-select" id="capTipoParticipante">
-<option value="Todos">Todos</option>
-<option value="Docente">Docente</option>
-<option value="Administrativo">Administrativo</option>
-<option value="Servicios Generales">Servicios Generales</option>
-</select></div>
-<button type="submit" class="btn btn-success w-100"><i class="fas fa-plus-circle me-1"></i> Crear Capacitación</button></form></div>
-</div>
-</div>
-<div class="col-lg-6">
-<div class="card">
-<div class="card-header">📚 Capacitaciones programadas</div>
-<div class="card-body">
-<div id="listaCapacitaciones" style="max-height: 420px; overflow-y: auto;">
-<p class="text-muted text-center">Cargando capacitaciones...</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<div id="moduloImportar" style="display: none;">
-    <h3 class="mb-4"><i class="fas fa-upload text-primary me-2"></i>Subir lista de docentes (CSV)</h3>
     <div class="row">
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header">🔒 Acceso restringido</div>
-                <div class="card-body">
-                    <p class="text-muted">Esta opción permite subir empleados desde un archivo .CSV. Está protegida con la misma contraseña de configuración.</p>
-                    <form id="formLoginImportar">
-                        <div class="mb-3">
-                            <label class="form-label">Contraseña de acceso</label>
-                            <input type="password" class="form-control" id="passwordImportar" placeholder="Ingrese la contraseña maestra">
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-lock-open me-1"></i> Validar y acceder</button>
-                        <div id="errorPasswordImport" class="text-danger small mt-1" style="display: none;">Contraseña incorrecta.</div>
-                    </form>
+        <nav class="col-md-3 col-lg-2 sidebar d-md-block">
+            <div class="text-center mb-4 mt-2">
+                <i class="fas fa-chalkboard-teacher fa-3x text-info"></i>
+                <h5 class="mt-2">CapacitaPro</h5>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" id="navRegistro" href="#"><i class="fas fa-user-check"></i> Registro</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="navConfig" href="#"><i class="fas fa-cog"></i> Configuración</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="navDashboard" href="#"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                </li>
+            </ul>
+            <hr class="border-secondary">
+            <div class="text-center text-secondary small mt-3">
+                <i class="fas fa-users"></i> <span id="totalEmpleadosSpan">0</span> empleados
+            </div>
+        </nav>
 
-                    <div id="formSubidaCSV" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
-                        <p><strong>Formato del CSV:</strong> El archivo debe tener dos columnas: <code>Nombre, Tipo</code>. No incluyas el ID.</p>
-                        <form id="formUploadCSV" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label class="form-label">Selecciona el archivo .CSV</label>
-                                <input type="file" class="form-control" id="fileCSV" accept=".csv" required>
-                            </div>
-                            <button type="submit" class="btn btn-success w-100"><i class="fas fa-upload me-1"></i> Subir e Importar Datos</button>
-                        </form>
+        <main class="col-md-9 col-lg-10 main-content">
+            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body" id="toastMessage">OK</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                     </div>
                 </div>
+            </div>
+
+            <!-- REGISTRO -->
+            <div id="moduloRegistro">
+                <h3 class="mb-4"><i class="fas fa-user-check text-primary me-2"></i>Registro en Capacitación</h3>
+                <div class="row">
+                    <div class="col-lg-5">
+                        <div class="card">
+                            <div class="card-header">📝 Nuevo registro</div>
+                            <div class="card-body">
+                                <form id="formRegistro">
+                                    <div class="mb-3">
+                                        <label class="form-label">Capacitación</label>
+                                        <select class="form-select" id="selectCapacitacionReg" required>
+                                            <option value="">Cargando...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Empleado</label>
+                                        <select class="form-select" id="selectEmpleadoReg" required>
+                                            <option value="">Selecciona una capacitación primero</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Fecha y hora (automática)</label>
+                                        <div class="fecha-hora-auto" id="fechaHoraAuto">--</div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i> Registrar</button>
+                                </form>
+                                <hr>
+                                <div class="text-muted small">
+                                    <i class="fas fa-info-circle"></i> Al registrarse, el empleado queda excluido de la lista de disponibles.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="card">
+                            <div class="card-header">📋 Registros recientes</div>
+                            <div class="card-body">
+                                <div id="listaRegistros" style="max-height: 400px; overflow-y: auto;">
+                                    <p class="text-muted text-center">Cargando registros...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIGURACIÓN -->
+            <div id="moduloConfig" style="display: none;">
+                <h3 class="mb-4"><i class="fas fa-cog text-primary me-2"></i>Configuración de Capacitaciones</h3>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">➕ Nueva Capacitación</div>
+                            <div class="card-body">
+                                <form id="formCapacitacion">
+                                    <div class="mb-2">
+                                        <label class="form-label">Título / Temática</label>
+                                        <input type="text" class="form-control" id="capTitulo" placeholder="Ej: Taller de Liderazgo" required>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <label class="form-label">Fecha</label>
+                                            <input type="date" class="form-control" id="capFecha" required>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label class="form-label">Horario</label>
+                                            <input type="time" class="form-control" id="capHorario" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Oferente</label>
+                                        <input type="text" class="form-control" id="capOferente" placeholder="Nombre del instructor" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Lugar</label>
+                                        <input type="text" class="form-control" id="capLugar" placeholder="Auditorio, Aula, etc." required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tipo de participantes</label>
+                                        <select class="form-select" id="capTipoParticipante">
+                                            <option value="Todos">Todos</option>
+                                            <option value="Docentes">Docentes</option>
+                                            <option value="Administrativos">Administrativos</option>
+                                            <option value="Servicios Generales">Servicios Generales</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus-circle me-1"></i> Crear Capacitación</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">📚 Capacitaciones programadas</div>
+                            <div class="card-body">
+                                <div id="listaCapacitaciones" style="max-height: 420px; overflow-y: auto;">
+                                    <p class="text-muted text-center">Cargando capacitaciones...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div id="moduloDashboard" style="display: none;">
+                <h3 class="mb-4"><i class="fas fa-chart-pie text-primary me-2"></i>Dashboard de Asistencia</h3>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>📊 Resumen por capacitación</span>
+                                <button id="btnDescargarPDF" class="btn btn-outline-danger btn-sm"><i class="fas fa-file-pdf me-1"></i>PDF</button>
+                            </div>
+                            <div class="card-body">
+                                <select class="form-select" id="selectDashboardCap">
+                                    <option value="">Cargando...</option>
+                                </select>
+                                <div id="dashboardStats" class="mt-3">
+                                    <p class="text-muted text-center">Selecciona una capacitación para ver estadísticas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">👥 Listado de participantes</div>
+                            <div class="card-body" id="dashboardListado">
+                                <p class="text-muted text-center">Selecciona una capacitación para ver los participantes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- MODAL CONTRASEÑA -->
+<div class="modal fade password-modal" id="passwordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="fas fa-lock me-2"></i>Acceso restringido</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Ingresa la contraseña para acceder a Configuración y Dashboard.</p>
+                <input type="password" class="form-control" id="passwordInput" placeholder="Contraseña">
+                <div id="passwordError" class="text-danger small mt-1" style="display:none;">Contraseña incorrecta.</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary w-100" id="btnPasswordSubmit">Acceder</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="moduloDashboard" style="display: none;">
-<h3 class="mb-4"><i class="fas fa-chart-pie text-primary me-2"></i>Dashboard de Asistencia</h3>
-<div class="row mb-4">
-<div class="col-md-6">
-<div class="card">
-<div class="card-header d-flex justify-content-between align-items-center"><span>📊 Resumen por capacitación</span> <button id="btnDescargarPDF" class="btn btn-outline-danger btn-sm"><i class="fas fa-file-pdf me-1"></i>PDF</button></div>
-<div class="card-body"><select class="form-select" id="selectDashboardCap">
-<option value="">Cargando...</option>
-</select>
-<div id="dashboardStats" class="mt-3">
-<p class="text-muted text-center">Selecciona una capacitación para ver estadísticas.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="col-md-6">
-<div class="card">
-<div class="card-header">👥 Listado de participantes</div>
-<div class="card-body" id="dashboardListado">
-<p class="text-muted text-center">Selecciona una capacitación para ver los participantes.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-<div id="moduloRegistro">
-<h3 class="mb-4"><i class="fas fa-user-check text-primary me-2"></i>Registro en Capacitación</h3>
-<div class="row">
-<div class="col-lg-5">
-<div class="card">
-<div class="card-header">📝 Nuevo registro</div>
-<div class="card-body"><form id="formRegistro">
-<div class="mb-3"><label class="form-label">Capacitación</label><select class="form-select" id="selectCapacitacionReg" required="">
-<option value="">Cargando...</option>
-</select></div>
-<div class="mb-3"><label class="form-label">Empleado</label><select class="form-select" id="selectEmpleadoReg" required="">
-<option value="">Selecciona una capacitación primero</option>
-</select></div>
-<div class="mb-3"><label class="form-label">Fecha y hora (automática)</label>
-<div class="fecha-hora-auto" id="fechaHoraAuto">--</div>
-</div>
-<button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i> Registrar</button></form><hr />
-<div class="text-muted small"><i class="fas fa-info-circle"></i> Al registrarse, el empleado queda excluido de la lista de disponibles.</div>
-</div>
-</div>
-</div>
-<div class="col-lg-7">
-<div class="card">
-<div class="card-header">📋 Registros recientes</div>
-<div class="card-body">
-<div id="listaRegistros" style="max-height: 400px; overflow-y: auto;">
-<p class="text-muted text-center">Selecciona una capacitación para ver sus registros.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</main></div>
-</div>
-
-<div class="modal fade password-modal" id="passwordModal" aria-hidden="true" tabindex="-1">
-<div class="modal-dialog modal-sm modal-dialog-centered">
-<div class="modal-content">
-<div class="modal-header">
-<h6 class="modal-title"><i class="fas fa-lock me-2"></i>Acceso restringido</h6>
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-<div class="modal-body">
-<p class="text-muted small">Ingresa la contraseña para acceder a Configuración y Dashboard.</p>
-<input type="password" class="form-control" id="passwordInput" placeholder="Contraseña" />
-<div id="passwordError" class="text-danger small mt-1" style="display: none;">Contraseña incorrecta.</div>
-</div>
-<div class="modal-footer"><button class="btn btn-primary w-100" id="btnPasswordSubmit">Acceder</button></div>
-</div>
-</div>
-</div>
-<p>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 (function() {
-  const API_URL = 'https://efqm.infinityfreeapp.com/api.php';
-    const PASSWORD = 'AdminCapa';
+    // ========== CONFIGURACIÓN API ==========
+    const API_URL = 'https://efqm.infinityfreeapp.com/api.php';
+    const PASSWORD = 'adminCapacita';
     
     let empleados = [];
     let capacitaciones = [];
@@ -335,34 +355,16 @@
 
     function renderListaRegistros() {
         const container = document.getElementById('listaRegistros');
-        const capIdSeleccionada = parseInt(document.getElementById('selectCapacitacionReg').value);
-        let registrosFiltrados = registros;
-        if (capIdSeleccionada) {
-            registrosFiltrados = registros.filter(r => r.capacitacion_id === capIdSeleccionada);
-        }
-
-        if (registrosFiltrados.length === 0) {
-            if (capIdSeleccionada) {
-                container.innerHTML = '<p class="text-muted text-center">Aún no hay registros para esta capacitación.</p>';
-            } else {
-                container.innerHTML = '<p class="text-muted text-center">Selecciona una capacitación para ver sus registros.</p>';
-            }
+        if (registros.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center">No hay registros aún.</p>';
             return;
         }
-
-        const sorted = [...registrosFiltrados].reverse();
+        const sorted = [...registros].reverse();
         let html = '';
         sorted.forEach(r => {
             const emp = getEmpleadoById(r.empleado_id);
             const cap = getCapacitacionById(r.capacitacion_id);
             if (!emp || !cap) return;
-            
-            const fechaLocal = new Date(r.fecha_hora);
-            const horaFormateada = fechaLocal.toLocaleString('es-ES', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-
             html += `
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
@@ -371,7 +373,7 @@
                         <span class="badge bg-info text-dark">${cap.titulo}</span>
                     </div>
                     <div>
-                        <span class="badge bg-light text-dark">${horaFormateada}</span>
+                        <span class="badge bg-light text-dark">${new Date(r.fecha_hora).toLocaleString('es-ES')}</span>
                     </div>
                 </div>
             `;
@@ -510,7 +512,6 @@
 
     document.getElementById('selectCapacitacionReg').addEventListener('change', function() {
         renderSelectEmpleadosRegistro();
-        renderListaRegistros();
         actualizarFechaHora();
     });
 
@@ -526,14 +527,8 @@
             showToast('Este empleado ya está registrado en esta capacitación', 'warning');
             return;
         }
-        
         const now = new Date();
-        const fechaHora = now.getFullYear() + '-' + 
-                         String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                         String(now.getDate()).padStart(2, '0') + ' ' + 
-                         String(now.getHours()).padStart(2, '0') + ':' + 
-                         String(now.getMinutes()).padStart(2, '0') + ':' + 
-                         String(now.getSeconds()).padStart(2, '0');
+        const fechaHora = now.toISOString().slice(0, 19).replace('T', ' ');
         
         const result = await apiRequest('addRegistro', {
             empleado_id: empId,
@@ -632,7 +627,6 @@
         document.getElementById('moduloRegistro').style.display = 'none';
         document.getElementById('moduloConfig').style.display = 'none';
         document.getElementById('moduloDashboard').style.display = 'none';
-        document.getElementById('moduloImportar').style.display = 'none'; 
 
         if (module === 'registro') {
             document.getElementById('navRegistro').classList.add('active');
@@ -646,9 +640,6 @@
             document.getElementById('navDashboard').classList.add('active');
             document.getElementById('moduloDashboard').style.display = 'block';
             renderDashboardStats();
-        } else if (module === 'importar') { 
-            document.getElementById('navImportar').classList.add('active');
-            document.getElementById('moduloImportar').style.display = 'block';
         }
     }
 
@@ -692,66 +683,6 @@
         e.preventDefault();
         setActiveModule('dashboard');
     });
-    document.getElementById('navImportar').addEventListener('click', function(e) {
-        e.preventDefault();
-        setActiveModule('importar');
-    });
-
-    document.getElementById('formLoginImportar').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const passInput = document.getElementById('passwordImportar').value;
-        const errorDiv = document.getElementById('errorPasswordImport');
-        
-        if (passInput === PASSWORD) {
-            errorDiv.style.display = 'none';
-            document.getElementById('formSubidaCSV').style.display = 'block';
-            document.getElementById('passwordImportar').disabled = true;
-            this.querySelector('button').disabled = true;
-            showToast('Acceso concedido para importar CSV', 'success');
-        } else {
-            errorDiv.style.display = 'block';
-            showToast('Contraseña incorrecta', 'danger');
-        }
-    });
-
-    document.getElementById('formUploadCSV').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const fileInput = document.getElementById('fileCSV');
-        if (fileInput.files.length === 0) {
-            showToast('Por favor, selecciona un archivo CSV.', 'warning');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('archivo_csv', fileInput.files[0]);
-
-        const btn = this.querySelector('button');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Importando...';
-        btn.disabled = true;
-
-        try {
-            const response = await fetch('importar_backend.php', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-
-            if (result.success) {
-                showToast(`¡Éxito! Se importaron ${result.insertados} empleados nuevos. (${result.ya_existentes || 0} ya existían)`, 'success');
-                await loadData(); 
-                fileInput.value = ''; 
-            } else {
-                showToast('Error: ' + result.error, 'danger');
-            }
-        } catch (error) {
-            showToast('Error de conexión al importar: ' + error.message, 'danger');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    });
 
     loadData();
     setActiveModule('registro');
@@ -759,6 +690,5 @@
 
 })();
 </script>
-</p>
 </body>
 </html>
